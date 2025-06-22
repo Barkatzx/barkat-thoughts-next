@@ -65,13 +65,13 @@ export default function Header() {
       </motion.div>
 
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex flex-1 justify-center backdrop-blur-sm px-6 py-2">
+      <nav className="hidden md:flex flex-1 justify-center backdrop-blur-sm px-6 py-2 font-[Akhand-bold]">
         <motion.div
           className="flex space-x-6"
           initial="hidden"
           animate="visible"
         >
-          {["হোমপেইজ", "ক্যাটাগরী", "Services"].map((item, i) => (
+          {["হোমপেইজ", "ক্যাটাগরী", "সার্ভিস"].map((item, i) => (
             <motion.div
               key={item}
               variants={navItemVariants}
@@ -81,7 +81,7 @@ export default function Header() {
             >
               <Link
                 href={`/${item.toLowerCase()}`}
-                className="hover:text-sky-400 transition-colors font-semibold text-xl"
+                className="hover:text-sky-400 transition-colors text-xl"
               >
                 {item}
               </Link>
@@ -116,7 +116,7 @@ export default function Header() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="md:hidden absolute top-25 left-3 right-3 bg-[#f9f6f3] shadow-lg z-50 font-bold text-lg"
+            className="md:hidden absolute top-25 left-3 right-3 bg-[#f9f6f3] shadow-lg z-50 text-lg"
           >
             <nav className="flex flex-col items-center py-4">
               {["About", "Statistics", "Services"].map((item, i) => (
