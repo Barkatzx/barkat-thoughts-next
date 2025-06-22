@@ -118,7 +118,9 @@ export default function PostsGrid({ posts }: PostGridProps) {
                       )}
 
                       {/* Title */}
-                      <h2 className="font-[Recoleta] text-xl">{post.title}</h2>
+                      <h2 className="font-[Akhand-bold] text-xl">
+                        {post.title}
+                      </h2>
                     </div>
                   </div>
                 </div>

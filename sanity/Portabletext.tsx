@@ -5,18 +5,18 @@ import Image from "next/image";
 export const components: PortableTextComponents = {
   block: {
     h1: ({ children }) => (
-      <h1 className="font-[Akhand-bold] text-5xl mb-4">{children}</h1>
+      <h1 className="font-[Akhand-bold] text-5xl mb-5">{children}</h1>
     ),
     h2: ({ children }) => (
-      <h2 className="font-[Akhand-bold] text-4xl mb-4">{children}</h2>
+      <h2 className="font-[Akhand-bold] text-4xl mb-5">{children}</h2>
     ),
     h3: ({ children }) => (
-      <h3 className="font-[Akhand-bold] text-3xl mb-4">{children}</h3>
+      <h3 className="font-[Akhand-bold] text-3xl mb-5">{children}</h3>
     ),
     h4: ({ children }) => (
-      <h4 className="font-[Akhand-bold] text-2xl mb-4">{children}</h4>
+      <h4 className="font-[Akhand-bold] text-2xl mb-5">{children}</h4>
     ),
-    normal: ({ children }) => <p className="text-xl">{children}</p>,
+    normal: ({ children }) => <p className="text-xl mb-5">{children}</p>,
   },
   marks: {
     strong: ({ children }) => <strong className="font-bold">{children}</strong>,
@@ -24,7 +24,7 @@ export const components: PortableTextComponents = {
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="list-disc ml-6 mb-4 space-y-2 text-xl">{children}</ul>
+      <ul className="list-disc ml-6 mb-5 space-y-2 text-xl">{children}</ul>
     ),
     number: ({ children }) => (
       <ol className="list-decimal ml-6 space-y-2 text-xl">{children}</ol>

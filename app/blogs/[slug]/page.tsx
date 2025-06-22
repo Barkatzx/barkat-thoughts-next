@@ -6,13 +6,17 @@ import { PortableText, type SanityDocument } from "next-sanity";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import { FaYoutube } from "react-icons/fa";
 
-// GROQ query for fetching post by slug
+// Updated GROQ query to include author details
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
   title,
   body,
+  author->{
+    name,
+    image,
+    bio
+  },
   publishedAt,
   categories[]->{ title },
   mainImage
@@ -51,10 +55,6 @@ export default async function PostPage(props: { params: tParams }) {
     ? urlFor(post.mainImage)?.width(800).height(450).url()
     : null;
 
-  const defaultAuthor = "Barkat Ullah";
-  const defaultAuthorImage =
-    "https://res.cloudinary.com/dnzvylpzu/image/upload/v1742024549/profile_pictures/hzsppmii7ywypaqipvsv.png";
-
   const formattedDate = new Date(post.publishedAt).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",
@@ -66,7 +66,7 @@ export default async function PostPage(props: { params: tParams }) {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-[#f9f6f3] flex flex-col gap-4 px-5 md:px-20 py-10">
         <div
-          className="absolute inset-0 bg-[url('/img/wave.png')] bg-cover opacity-60 z-0"
+          className="absolute inset-0 bg-[url('/wave.png')] bg-cover opacity-60 z-0"
           aria-hidden="true"
         />
 
@@ -83,46 +83,13 @@ export default async function PostPage(props: { params: tParams }) {
         </div>
 
         {/* Post Title */}
-        <h1 className="md:text-7xl text-3xl font-[Recoleta] z-10">
+        <h1 className="md:text-7xl text-3xl font-[Akhand-bold] z-10">
           {post.title}
         </h1>
 
-        {/* Author Info + Share */}
-        <div className="flex flex-col lg:flex-row items-start text-xl font-bold mb-5 justify-between z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-3 mb-4 lg:mb-0">
-            <div className="flex items-center gap-3">
-              <Image
-                src={defaultAuthorImage}
-                alt={defaultAuthor}
-                width={40}
-                height={40}
-                className="rounded-full"
-                unoptimized
-              />
-              <span>{defaultAuthor}</span>
-              <span className="lg:mx-2">/</span>
-              <span>{formattedDate}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 text-lg mt-2 lg:mt-0 z-10">
-            <h2 className="text-black">Share:</h2>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <button className="bg-white p-2 rounded-full hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out text-black">
-                <FaXTwitter />
-              </button>
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <button className="bg-white p-2 rounded-full hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out text-black">
-                <FaFacebook />
-              </button>
-            </a>
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              <button className="bg-white p-2 rounded-full hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out text-black">
-                <FaLinkedin />
-              </button>
-            </a>
-          </div>
+        {/* Date only in header */}
+        <div className="text-xl font-bold mb-5 z-10">
+          <span>{formattedDate}</span>
         </div>
 
         {/* Featured Image */}
@@ -145,6 +112,30 @@ export default async function PostPage(props: { params: tParams }) {
           {Array.isArray(post.body) && (
             <PortableText value={post.body} components={components} />
           )}
+
+          {/* Author Info Section - Added below post content */}
+          {post.author && (
+            <div className="mt-16 p-6 bg-[#f9f6f3] rounded-xl">
+              <div className="flex items-center gap-4 mb-4">
+                {post.author.image && (
+                  <Image
+                    src={urlFor(post.author.image)?.url() || ""}
+                    alt={post.author.name}
+                    width={80}
+                    height={80}
+                    className="rounded-full"
+                    unoptimized
+                  />
+                )}
+                <h2 className="text-2xl font-bold">{post.author.name}</h2>
+              </div>
+              {post.author.bio && (
+                <div className="prose max-w-none">
+                  <PortableText value={post.author.bio} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Barkat Div - 30% on large screens */}
@@ -153,9 +144,9 @@ export default async function PostPage(props: { params: tParams }) {
           <p className="text-xl mt-2">
             Join me on YouTube as I explore the worlds of productivity,
             business, creativity, and lifelong learning. I share insights from
-            the books I’m reading, lessons I’ve picked up along the way, and
+            the books I'm reading, lessons I've picked up along the way, and
             practical tips to help you grow. Every journey starts somewhere —
-            let’s grow together, one video at a time. 🌱📚
+            let's grow together, one video at a time. 🌱📚
           </p>
           <Link
             target="_blank"
