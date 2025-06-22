@@ -4,12 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  FaBookOpen,
-  FaChevronLeft,
-  FaChevronRight,
-  FaSearch,
-} from "react-icons/fa";
+import { FaBookOpen, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Post } from "./Blog";
 
 const categoryColors: Record<string, string> = {
@@ -63,26 +58,7 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Search Header */}
-      <div className="bg-white shadow-sm">
-        <div className="container mx-auto px-6 py-8">
-          <div className="relative max-w-2xl mx-auto">
-            <input
-              type="text"
-              placeholder="Search articles..."
-              className="w-full py-3 px-5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-12"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-            <FaSearch className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen">
       {/* Main Content */}
       <section className="container mx-auto px-6 py-12">
         {/* Featured Post */}
@@ -93,8 +69,10 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
             className="mb-16"
           >
             <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
-              <FaBookOpen className="text-indigo-500" />
-              <span>Featured Article</span>
+              <FaBookOpen className="text-blue-400" />
+              <span className="font-[Akhand-bold] text-3xl">
+                ফিচার্ড আর্টিকেল
+              </span>
             </h2>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
               <Link href={`/blogs/${posts[0].slug.current}`}>
@@ -117,21 +95,21 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
                           key={i}
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
                             categoryColors[cat.title.toLowerCase()] ||
-                            categoryColors.default
+                            categoryColors.blue
                           }`}
                         >
                           {cat.title}
                         </span>
                       ))}
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                    <h3 className="font-[Akhand-bold] text-2xl md:text-3xl font-bold mb-4">
                       {posts[0].title}
                     </h3>
                     <p className="text-gray-600 mb-6 line-clamp-3">
                       {getExcerpt(posts[0])}
                     </p>
-                    <button className="self-start bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-full transition-colors duration-200">
-                      Read Article
+                    <button className="self-start bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 font-[Akhand-bold]">
+                      পুরো লেখা পড়ুন...
                     </button>
                   </div>
                 </div>
