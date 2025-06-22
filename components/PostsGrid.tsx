@@ -4,150 +4,241 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaBookOpen,
+  FaChevronLeft,
+  FaChevronRight,
+  FaSearch,
+} from "react-icons/fa";
 import { Post } from "./Blog";
 
-// Pastel colors
-const pastelColors = [
-  "#cdb4db",
-  "#bdb2ff",
-  "#ffafcc",
-  "#e4c1f9",
-  "#a2d2ff",
-  "#ccd5ae",
-];
+const categoryColors: Record<string, string> = {
+  technology: "bg-blue-100 text-blue-800",
+  design: "bg-purple-100 text-purple-800",
+  business: "bg-green-100 text-green-800",
+  lifestyle: "bg-pink-100 text-pink-800",
+  default: "bg-gray-100 text-gray-800",
+};
 
-function getRandomColor() {
-  const index = Math.floor(Math.random() * pastelColors.length);
-  return pastelColors[index];
-}
-
-interface PostGridProps {
-  posts: Post[];
-}
-
-export default function PostsGrid({ posts }: PostGridProps) {
-  const postsPerPage = 6; // Number of posts per page
+export default function PostsGrid({ posts }: { posts: Post[] }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const postsPerPage = 9;
 
-  // Calculate the index of the first and last post based on the current page
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
+  // Filter posts based on search query
+  const filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.categories?.some((cat) =>
+        cat.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+  );
 
-  // Slice the posts array to get the current page's posts
-  const currentPosts = posts.slice(startIndex, endIndex);
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const currentPosts = filteredPosts.slice(
+    (currentPage - 1) * postsPerPage,
+    currentPage * postsPerPage
+  );
 
-  // Handle Next and Previous page navigation
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+  const handlePrevPage = () =>
+    currentPage > 1 && setCurrentPage(currentPage - 1);
+  const handleNextPage = () =>
+    currentPage < totalPages && setCurrentPage(currentPage + 1);
+
+  // Function to extract first paragraph as excerpt if no excerpt exists
+  const getExcerpt = (post: Post) => {
+    if (post.excerpt) return post.excerpt;
+    if (post.body) {
+      const firstBlock = post.body.find(
+        (block: any) => block._type === "block"
+      );
+      if (firstBlock) {
+        return (
+          firstBlock.children[0]?.text || "Read this interesting article..."
+        );
+      }
     }
-  };
-
-  const handleNextPage = () => {
-    const totalPages = Math.ceil(posts.length / postsPerPage);
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    return "Read this interesting article...";
   };
 
   return (
-    <main className="px-5 md:px-20 py-10">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {currentPosts.map((post, index) => {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const [hoverColor, setHoverColor] = useState<string | null>(null);
+    <div className="min-h-screen bg-gray-50">
+      {/* Search Header */}
+      <div className="bg-white shadow-sm">
+        <div className="container mx-auto px-6 py-8">
+          <div className="relative max-w-2xl mx-auto">
+            <input
+              type="text"
+              placeholder="Search articles..."
+              className="w-full py-3 px-5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-12"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+            <FaSearch className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
+      </div>
 
-          return (
-            <motion.div
-              key={post._id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="h-full"
-            >
-              <Link
-                href={`/blogs/${post.slug.current}`}
-                className="h-full block"
+      {/* Main Content */}
+      <section className="container mx-auto px-6 py-12">
+        {/* Featured Post */}
+        {posts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-16"
+          >
+            <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+              <FaBookOpen className="text-indigo-500" />
+              <span>Featured Article</span>
+            </h2>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all hover:shadow-xl">
+              <Link href={`/blogs/${posts[0].slug.current}`}>
+                <div className="md:flex">
+                  {posts[0].mainImage?.asset?.url && (
+                    <div className="md:w-1/2 h-64 md:h-auto relative">
+                      <Image
+                        src={posts[0].mainImage.asset.url}
+                        alt={posts[0].title}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                  )}
+                  <div className="p-8 md:w-1/2 flex flex-col justify-center">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {posts[0].categories?.map((cat, i) => (
+                        <span
+                          key={i}
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            categoryColors[cat.title.toLowerCase()] ||
+                            categoryColors.default
+                          }`}
+                        >
+                          {cat.title}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                      {posts[0].title}
+                    </h3>
+                    <p className="text-gray-600 mb-6 line-clamp-3">
+                      {getExcerpt(posts[0])}
+                    </p>
+                    <button className="self-start bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-full transition-colors duration-200">
+                      Read Article
+                    </button>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+
+        {/* All Posts Grid */}
+        <div className="mb-8 flex justify-between items-center">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <span>Latest Articles</span>
+          </h2>
+          {filteredPosts.length > postsPerPage && (
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="p-2 rounded-full bg-white shadow hover:bg-gray-100 transition disabled:opacity-50"
               >
-                <div
-                  className="group relative rounded-xl overflow-hidden shadow-md transition-all duration-300 transform hover:-translate-y-2 cursor-pointer bg-[#f9f6f3] h-full flex flex-col"
-                  onMouseEnter={() => setHoverColor(getRandomColor())}
-                >
-                  {/* Random hover color */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300"
-                    style={{
-                      backgroundColor: hoverColor ?? "#fff",
-                      zIndex: 0,
-                    }}
-                  ></div>
+                <FaChevronLeft />
+              </button>
+              <span className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-full bg-white shadow hover:bg-gray-100 transition disabled:opacity-50"
+              >
+                <FaChevronRight />
+              </button>
+            </div>
+          )}
+        </div>
 
-                  <div className="relative z-10 flex-1 flex flex-col">
-                    {/* Image */}
+        {currentPosts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {currentPosts.map((post, index) => (
+              <motion.article
+                key={post._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              >
+                <Link
+                  href={`/blogs/${post.slug.current}`}
+                  className="block h-full"
+                >
+                  <div className="h-full flex flex-col">
                     {post.mainImage?.asset?.url && (
-                      <div className="aspect-video w-full relative">
+                      <div className="relative h-48 w-full">
                         <Image
                           src={post.mainImage.asset.url}
                           alt={post.title}
                           fill
-                          priority // 👈 Preloads the image early for better LCP
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                           className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
                     )}
-
-                    <div className="p-4 flex-1 flex flex-col">
-                      {/* Categories */}
-                      {post.categories && post.categories.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {post.categories.map((cat, i) => (
-                            <span
-                              key={i}
-                              className=" inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                            >
-                              {cat.title || "Uncategorized"}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="inline-block bg-gray-200 text-sm px-3 py-1 rounded-full text-gray-800 mb-2">
-                          Uncategorized
-                        </span>
-                      )}
-
-                      {/* Title */}
-                      <h2 className="font-[Akhand-bold] text-xl">
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {post.categories?.map((cat, i) => (
+                          <span
+                            key={i}
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              categoryColors[cat.title.toLowerCase()] ||
+                              categoryColors.default
+                            }`}
+                          >
+                            {cat.title}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 line-clamp-2">
                         {post.title}
-                      </h2>
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                        {getExcerpt(post)}
+                      </p>
+                      <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span className="text-xs text-gray-500">
+                          {new Date(post.publishedAt).toLocaleDateString()}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          5 min read
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Pagination */}
-      <div className="flex gap-5 justify-center mt-8 items-center">
-        <button
-          onClick={handlePrevPage}
-          disabled={currentPage === 1}
-          className="p-2 rounded-full bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
-        >
-          <FaChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
-        <span className="text-sm text-gray-700">Page {currentPage}</span>
-        <button
-          onClick={handleNextPage}
-          disabled={currentPage * postsPerPage >= posts.length}
-          className="p-2 rounded-full bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
-        >
-          <FaChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
-      </div>
-    </main>
+                </Link>
+              </motion.article>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <h3 className="text-xl font-medium text-gray-500">
+              No articles found
+            </h3>
+            <p className="text-gray-400 mt-2">
+              Try adjusting your search query
+            </p>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

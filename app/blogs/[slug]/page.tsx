@@ -7,6 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FaYoutube } from "react-icons/fa";
+import { IoIosTime } from "react-icons/io";
+import { MdDateRange } from "react-icons/md";
 
 // Updated GROQ query to include author details
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -55,11 +57,21 @@ export default async function PostPage(props: { params: tParams }) {
     ? urlFor(post.mainImage)?.width(800).height(450).url()
     : null;
 
-  const formattedDate = new Date(post.publishedAt).toLocaleDateString("en-GB", {
+  const date = new Date(post.publishedAt);
+
+  const formattedDate = date.toLocaleDateString("bn-BD", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+
+  const formattedTime = date.toLocaleTimeString("bn-BD", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const fullDateTime = `${formattedDate}, ${formattedTime}`;
 
   return (
     <main className="flex flex-col">
@@ -75,7 +87,7 @@ export default async function PostPage(props: { params: tParams }) {
           {post.categories?.map((cat: { title: string }, idx: number) => (
             <span
               key={idx}
-              className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full"
+              className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
             >
               {cat.title}
             </span>
@@ -88,8 +100,15 @@ export default async function PostPage(props: { params: tParams }) {
         </h1>
 
         {/* Date only in header */}
-        <div className="text-xl font-bold mb-5 z-10">
-          <span>{formattedDate}</span>
+        <div className="flex items-center gap-6 text-2xl font-[Akhand-bold] mb-5 z-10">
+          <div className="flex items-center gap-2">
+            <MdDateRange className="text-blue-600" />
+            <span>{formattedDate}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <IoIosTime className="text-blue-600" />
+            <span>{formattedTime}</span>
+          </div>
         </div>
 
         {/* Featured Image */}
@@ -99,7 +118,7 @@ export default async function PostPage(props: { params: tParams }) {
             alt={post.title}
             width={1200}
             height={630}
-            className="rounded-xl z-10"
+            className="rounded-2xl z-10"
             unoptimized
           />
         )}
@@ -108,7 +127,7 @@ export default async function PostPage(props: { params: tParams }) {
       {/* Post Body */}
       <div className="px-5 md:px-20 py-10 flex gap-10 items-start lg:flex-row flex-col">
         {/* Post Body - 70% on large screens */}
-        <div className="mt-6 text-xl lg:w-[70%] w-full">
+        <div className="mt-6 text-xl lg:w-[70%] w-full ">
           {Array.isArray(post.body) && (
             <PortableText value={post.body} components={components} />
           )}
@@ -116,18 +135,20 @@ export default async function PostPage(props: { params: tParams }) {
           {/* Author Info Section - Added below post content */}
           {post.author && (
             <div className="mt-16 p-6 bg-[#f9f6f3] rounded-xl">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-4 ">
                 {post.author.image && (
                   <Image
                     src={urlFor(post.author.image)?.url() || ""}
                     alt={post.author.name}
-                    width={80}
-                    height={80}
+                    width={50}
+                    height={50}
                     className="rounded-full"
                     unoptimized
                   />
                 )}
-                <h2 className="text-2xl font-bold">{post.author.name}</h2>
+                <h2 className="text-2xl font-[Akhand-bold]">
+                  {post.author.name}
+                </h2>
               </div>
               {post.author.bio && (
                 <div className="prose max-w-none">
