@@ -43,14 +43,13 @@ export default function BlogHero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h1 className="font-[Recoleta] text-3xl md:text-6xl leading-tight">
-                Insights & Stories <br />
-                From The Digital World ✍️
+              <h1 className="font-[Akhand-bold] text-3xl md:text-6xl leading-tight">
+                কোড, ক্যারিয়ার ও কনসিস্টেন্সি — প্রতিদিন এগিয়ে যাওয়ার গল্প ✍️
               </h1>
-              <p className="md:text-xl text-lg mt-6 max-w-3xl mx-auto">
-                Explore articles on web development, design trends, business
-                growth, and technology insights to stay ahead in the digital
-                landscape.
+              <p className="md:text-2xl text-lg mt-6 max-w-3xl mx-auto">
+                ফুল স্ট্যাক ডেভেলপমেন্ট থেকে শুরু করে প্রোডাক্টিভিটি হ্যাক, টাইম
+                ম্যানেজমেন্ট — প্রতিটি লেখায় আছে বাস্তব অভিজ্ঞতা, শেখার উপকরণ
+                এবং ক্যারিয়ার গড়ার পথনির্দেশনা।
               </p>
             </motion.div>
           </div>
