@@ -225,9 +225,7 @@ export default async function PostPage(props: { params: tParams }) {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-[Akhand-bold] text-lg truncate">
-                      {category.title}
-                    </h3>
+                    <h3 className="text-lg truncate">{category.title}</h3>
                   </div>
                   <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
                     <span className="text-lg font-[Akhand-bold] text-gray-600">

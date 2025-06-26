@@ -27,11 +27,21 @@ const ALL_CATEGORIES_QUERY = `*[_type == "category"] {
   title,
   description,
   "image": image.asset->,
-  "postCount": count(*[_type == "post" && references(^._id)])
+  "postCount": count(*[_type == "post" && references(^._id)]),
+  "subCategories": *[_type == "subCategory" && references(^._id)] {
+    title,
+    slug,
+    "postCount": count(*[_type == "post" && references(^._id)])
+  }
 }`;
 
 const CURRENT_CATEGORY_QUERY = `*[_type == "category" && title == $slug][0] {
-  description
+  description,
+  "subCategories": *[_type == "subCategory" && references(^._id)] {
+    title,
+    slug,
+    description
+  }
 }`;
 
 // Convert English numerals to Bangla
@@ -90,9 +100,7 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-// Next.js 15: Page component with proper async params handling
 export default async function CategoryPage({ params }: PageProps) {
-  // Await the params promise first
   const resolvedParams = await params;
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
@@ -121,6 +129,21 @@ export default async function CategoryPage({ params }: PageProps) {
           <p className="text-xl text-gray-700 z-5">
             {currentCategory.description}
           </p>
+        )}
+
+        {/* Show subcategories if they exist */}
+        {currentCategory?.subCategories?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4 z-5">
+            {currentCategory.subCategories.map((subCat: any) => (
+              <Link
+                key={subCat.slug.current}
+                href={`/category/${decodedSlug}/${subCat.slug.current}`}
+                className="bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm shadow-sm border border-gray-200 transition-colors"
+              >
+                {subCat.title}
+              </Link>
+            ))}
+          </div>
         )}
       </div>
 
@@ -228,39 +251,99 @@ export default async function CategoryPage({ params }: PageProps) {
           <hr className="mb-4 border-gray-200" />
 
           {/* Categories List */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             {categories.map((category: any) => (
-              <Link
-                key={category.title}
-                href={`/category/${category.title}`}
-                className={`flex items-center gap-3 p-1 hover:bg-gray-200 rounded-xl font-[Akhand-bold] transition-colors ${
-                  decodedSlug === category.title ? "bg-gray-200" : ""
-                }`}
-              >
-                {category.image && (
-                  <Image
-                    src={builder
-                      .image(category.image)
-                      .width(100)
-                      .height(100)
-                      .url()}
-                    alt={category.title}
-                    width={40}
-                    height={40}
-                    className="rounded-full w-7 h-7 object-cover"
-                  />
+              <div key={category.title} className="group">
+                <div className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-xl font-[Akhand-bold] transition-colors">
+                  <Link
+                    href={`/category/${category.title}`}
+                    className={`flex items-center gap-3 w-full ${
+                      decodedSlug === category.title ? "bg-gray-100" : ""
+                    }`}
+                  >
+                    {category.image && (
+                      <Image
+                        src={builder
+                          .image(category.image)
+                          .width(100)
+                          .height(100)
+                          .url()}
+                        alt={category.title}
+                        width={32}
+                        height={32}
+                        className="rounded-full w-8 h-8 object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-medium">
+                        {category.title}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
+                        <span className="text-sm font-[Akhand-bold] text-gray-600">
+                          {toBanglaNumeral(category.postCount || 0)}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Dropdown toggle button */}
+                  {category.subCategories?.length > 0 && (
+                    <button
+                      className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const subMenu = document.getElementById(
+                          `submenu-${category.title}`
+                        );
+                        subMenu?.classList.toggle("hidden");
+                        const arrow = document.getElementById(
+                          `arrow-${category.title}`
+                        );
+                        arrow?.classList.toggle("rotate-180");
+                      }}
+                    >
+                      <svg
+                        id={`arrow-${category.title}`}
+                        className="w-4 h-4 transition-transform"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Subcategories Dropdown */}
+                {category.subCategories?.length > 0 && (
+                  <div
+                    id={`submenu-${category.title}`}
+                    className="ml-10 mt-1 space-y-1 pl-2 border-l-2 border-gray-200 hidden"
+                  >
+                    {category.subCategories.map((subCat: any) => (
+                      <Link
+                        key={subCat.slug.current}
+                        href={`/category/${category.title}/${subCat.slug.current}`}
+                        className="flex items-center justify-between p-2 text-sm hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <span className="truncate">{subCat.title}</span>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                          {toBanglaNumeral(subCat.postCount || 0)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-medium truncate">
-                    {category.title}
-                  </h3>
-                </div>
-                <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
-                  <span className="text-lg font-[Akhand-bold] text-gray-600">
-                    {toBanglaNumeral(category.postCount || 0)}
-                  </span>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>

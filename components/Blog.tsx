@@ -15,6 +15,14 @@ export interface Post {
   };
   excerpt?: string;
   body?: any[];
+  author?: {
+    name: string;
+    image?: {
+      asset: {
+        url: string;
+      };
+    };
+  };
   categories?: {
     title: string;
     subCategories?: {
@@ -40,6 +48,14 @@ const POSTS_QUERY = `*[
   },
   excerpt,
   body,
+  author->{
+    name,
+    image {
+      asset->{
+        url
+      }
+    }
+  },
   categories[]->{
     title,
     subCategories[] {
