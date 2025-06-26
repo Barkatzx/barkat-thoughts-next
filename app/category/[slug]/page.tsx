@@ -1,5 +1,3 @@
-// app/category/[slug]/page.tsx
-
 import { client } from "@/sanity/Client";
 import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
@@ -15,7 +13,12 @@ const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "catego
   body,
   categories[]->{
     title,
-    "image": image.asset->
+    subCategories[] {
+      title,
+      slug {
+        current
+      }
+    }
   },
   author->{
     name,
@@ -52,6 +55,29 @@ const toBanglaNumeral = (num: number): string => {
     .replace(/\d/g, (digit) => banglaNumerals[parseInt(digit)]);
 };
 
+// Format date in Bangla
+const formatBanglaDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  return date.toLocaleDateString("bn-BD", options);
+};
+
+// Format time in Bangla
+const formatBanglaTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
+  let timeString = date.toLocaleTimeString("bn-BD", options);
+  return timeString.replace("AM", "পূর্বাহ্ণ").replace("PM", "অপরাহ্ণ");
+};
+
 const builder = imageUrlBuilder(client);
 
 // Calculate reading time in Bangla
@@ -76,14 +102,12 @@ const calculateReadingTime = (content: any) => {
     .join("");
 };
 
-// Type definition for the page props
 interface PageProps {
   params: Promise<{
     slug: string;
   }>;
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps) {
   const resolvedParams = await params;
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
@@ -122,11 +146,11 @@ export default async function CategoryPage({ params }: PageProps) {
           className="absolute inset-0 bg-[url('/wave.png')] bg-cover opacity-60 z-0"
           aria-hidden="true"
         />
-        <h1 className="font-[Akhand-bold] text-5xl mb-2 z-5">
+        <h1 className="font-[Akhand-bold] text-3xl md:text-6xl leading-tight mb-2 z-5">
           {decodedSlug} এর সকল পোস্টগুলো
         </h1>
         {currentCategory?.description && (
-          <p className="text-xl text-gray-700 z-5">
+          <p className="md:text-2xl text-lg z-5">
             {currentCategory.description}
           </p>
         )}
@@ -183,17 +207,38 @@ export default async function CategoryPage({ params }: PageProps) {
                   )}
 
                   <div className="p-4">
-                    {/* Categories Badges */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {post.categories?.map((cat: any) => (
-                        <Link
-                          key={cat.title}
-                          href={`/category/${cat.title}`}
-                          className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full text-sm text-blue-800 transition-colors"
-                        >
-                          {cat.title}
-                        </Link>
-                      ))}
+                    {/* Categories, Subcategories and Date */}
+                    <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      {post.categories && post.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {post.categories.map((cat: any) => (
+                            <div
+                              key={cat.title}
+                              className="flex flex-wrap gap-1"
+                            >
+                              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                {cat.title}
+                              </span>
+                              {cat.subCategories?.map((subCat: any) => (
+                                <span
+                                  key={subCat.slug.current}
+                                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                                >
+                                  {subCat.title}
+                                </span>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {post.publishedAt && (
+                        <div className="text-xs whitespace-nowrap font-[Akhand-bold]">
+                          <span>{formatBanglaDate(post.publishedAt)}</span>
+                          {/* <span className="mx-1">•</span>
+                          <span>{formatBanglaTime(post.publishedAt)}</span> */}
+                        </div>
+                      )}
                     </div>
 
                     {/* Post Title */}

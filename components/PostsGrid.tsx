@@ -18,25 +18,7 @@ const formatBanglaDate = (dateString: string): string => {
     month: "long",
     day: "numeric",
   };
-
-  // Convert to Bangla numerals
-  const formattedDate = date.toLocaleDateString("bn-BD", options);
-  return formattedDate;
-};
-
-// Format time in Bangla
-const formatBanglaTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  };
-
-  // Convert to Bangla numerals and replace AM/PM
-  let timeString = date.toLocaleTimeString("bn-BD", options);
-  timeString = timeString.replace("AM", "পূর্বাহ্ণ").replace("PM", "অপরাহ্ণ");
-  return timeString;
+  return date.toLocaleDateString("bn-BD", options);
 };
 
 // Calculate reading time in Bangla
@@ -54,11 +36,7 @@ const calculateReadingTime = (content: any) => {
     }, 0) || 0;
 
   const minutes = Math.ceil(wordCount / 200);
-  return minutes
-    .toString()
-    .split("")
-    .map((digit) => banglaNumerals[parseInt(digit)])
-    .join("");
+  return toBanglaNumeral(minutes);
 };
 
 interface PostsGridProps {
@@ -67,7 +45,7 @@ interface PostsGridProps {
 
 export default function PostsGrid({ posts }: PostsGridProps) {
   if (!posts || posts.length === 0) {
-    return <div>No posts found</div>;
+    return <div className="text-center py-10">কোনো পোস্ট পাওয়া যায়নি</div>;
   }
 
   return (
@@ -92,50 +70,50 @@ export default function PostsGrid({ posts }: PostsGridProps) {
             )}
 
             <div className="p-4">
-              {/* Category, Subcategory and Date */}
-              <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                {post.categories && post.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {post.categories.map((category) => (
-                      <div
-                        key={category.title}
-                        className="flex flex-wrap gap-1"
-                      >
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                          {category.title}
-                        </span>
-                        {category.subCategories?.map((subCat) => (
-                          <span
-                            key={subCat.slug.current}
-                            className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-                          >
-                            {subCat.title}
+              {/* Category, Subcategory and Date - Flex layout for all screens */}
+              <div className="flex justify-between items-start mb-3 gap-2">
+                {/* Left side - Categories and Subcategories */}
+                <div className="flex-1 min-w-0">
+                  {post.categories && post.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {post.categories.map((category) => (
+                        <div
+                          key={category.title}
+                          className="flex flex-wrap gap-1"
+                        >
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded font-[Akhand-bold]">
+                            {category.title}
                           </span>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          {category.subCategories?.map((subCat) => (
+                            <span
+                              key={subCat.slug.current}
+                              className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded font-[Akhand-bold]"
+                            >
+                              {subCat.title}
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
+                {/* Right side - Date (aligned to end) */}
                 {post.publishedAt && (
-                  <div className="text-xs text-gray-500 whitespace-nowrap">
-                    <span className="text-sm text-black font-bold">
-                      {formatBanglaDate(post.publishedAt)}
-                    </span>
-                    {/* <span className="mx-1">•</span>
-                    <span>{formatBanglaTime(post.publishedAt)}</span> */}
+                  <div className="text-xs whitespace-nowrap font-[Akhand-bold] ml-2">
+                    {formatBanglaDate(post.publishedAt)}
                   </div>
                 )}
               </div>
 
               {/* Title */}
-              <h2 className="font-[Akhand-bold] text-2xl mb-2 hover:text-blue-600 transition-colors duration-200">
+              <h2 className="font-[Akhand-bold] text-xl md:text-2xl mb-2 hover:text-blue-600 transition-colors duration-200">
                 <Link href={`/blogs/${post.slug.current}`}>{post.title}</Link>
               </h2>
 
               {/* Excerpt */}
               {post.excerpt && (
-                <p className="text-gray-600 mb-3 line-clamp-2 text-lg">
+                <p className="text-gray-600 mb-3 line-clamp-2 text-base md:text-lg">
                   {post.excerpt}
                 </p>
               )}
@@ -163,7 +141,7 @@ export default function PostsGrid({ posts }: PostsGridProps) {
                     </div>
                   )}
                   <span className="text-sm text-gray-600">
-                    {post.author?.name || "Unknown Author"}
+                    {post.author?.name || "লেখক"}
                   </span>
                 </div>
                 <div className="text-sm text-gray-500">
