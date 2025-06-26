@@ -181,45 +181,75 @@ export default async function PostPage(props: { params: tParams }) {
         </div>
 
         {/* All Categories Section - 30% on large screens */}
-        <div className="bg-[#f9f6f3] shadow-xl rounded-xl p-5 lg:w-[30%] w-full lg:sticky lg:top-20">
-          <h2 className="text-2xl font-[Akhand-bold] mb-4">সকল ক্যাটাগরি</h2>
-          <div className="space-y-4">
-            {categories?.map(
-              (category: {
-                _id: string;
-                title: string;
-                image: any;
-                postCount: number;
-              }) => (
+        <div className="bg-white shadow-sm rounded-2xl p-5 lg:w-[30%] w-full lg:sticky lg:top-20 border border-gray-100">
+          <h2 className="font-[Akhand-bold] text-2xl mb-4 px-2">
+            সকল ক্যাটাগরি
+          </h2>
+          <div className="space-y-1">
+            {categories?.map((category: any, idx: any) => {
+              // Generate a unique key (prefer _id, fallback to idx)
+              const key = category._id || idx;
+
+              // Build image URL safely
+              const imageBuilder = category.image
+                ? urlFor(category.image)
+                : null;
+              const imageUrl = imageBuilder
+                ? imageBuilder.width(100).height(100).url()
+                : "";
+
+              // Generate slug
+              const slug =
+                category.slug?.current ||
+                (category.title
+                  ? category.title.toLowerCase().replace(/\s+/g, "-")
+                  : "unknown");
+
+              return (
                 <Link
-                  key={category._id}
-                  href={`/category/${category.title.toLowerCase()}`}
-                  className="flex items-center gap-3 p-1 bg-white rounded-2xl"
+                  key={key}
+                  href={`/category/${slug}`}
+                  className="flex items-center gap-3 p-1 hover:bg-gray-200 active:bg-gray-400 rounded-xl transition-colors duration-100"
                 >
                   {category.image && (
-                    <Image
-                      src={
-                        urlFor(category.image)?.width(100).height(100).url() ||
-                        ""
-                      }
-                      alt={category.title}
-                      width={30}
-                      height={30}
-                      className="rounded-full object-cover"
-                      unoptimized
-                    />
+                    <div className="w-5 h-5 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                      <Image
+                        src={imageUrl}
+                        alt={category.title}
+                        width={20}
+                        height={20}
+                        className="object-cover rounded-full"
+                        unoptimized
+                      />
+                    </div>
                   )}
-                  <div>
-                    <h3 className="text-lg">
-                      {category.title} ({toBanglaNumeral(category.postCount)})
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-[Akhand-bold] text-sm text-gray-800 truncate">
+                      {category.title}
                     </h3>
-                    {/* <p className="text-sm text-gray-600">
-                      {toBanglaNumeral(category.postCount)}টি পোস্ট
-                    </p> */}
                   </div>
+                  <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
+                    <span className="text-sm font-[Akhand-bold] text-gray-600">
+                      {toBanglaNumeral(category.postCount || 0)}
+                    </span>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-gray-400"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
                 </Link>
-              )
-            )}
+              );
+            })}
           </div>
         </div>
       </div>
