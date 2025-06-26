@@ -6,11 +6,10 @@ import { PortableText, type SanityDocument } from "next-sanity";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FaYoutube } from "react-icons/fa";
 import { IoIosTime } from "react-icons/io";
 import { MdDateRange } from "react-icons/md";
 
-// Updated GROQ query to include author details
+// Updated GROQ query to include author details and separate query for all categories
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
   title,
   body,
@@ -20,9 +19,27 @@ const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
     bio
   },
   publishedAt,
-  categories[]->{ title },
+  categories[]->{
+    title,
+    "image": image.asset->
+  },
   mainImage
 }`;
+
+// Query to fetch all categories with post count
+const CATEGORIES_QUERY = `*[_type == "category"] {
+  title,
+  "image": image.asset->,
+  "postCount": count(*[_type == "post" && references(^._id)])
+} | order(title asc)`;
+
+// Function to convert English numerals to Bangla
+const toBanglaNumeral = (num: number): string => {
+  const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return num
+    .toString()
+    .replace(/\d/g, (digit) => banglaNumerals[parseInt(digit)]);
+};
 
 // Sanity image URL builder
 const { projectId, dataset } = client.config();
@@ -48,9 +65,13 @@ export default async function PostPage(props: { params: tParams }) {
   const decodedSlug = decodeURIComponent(slug);
   if (!decodedSlug) return notFound();
 
-  const post = await client.fetch<SanityDocument>(POST_QUERY, {
-    slug: decodedSlug,
-  });
+  const [post, categories] = await Promise.all([
+    client.fetch<SanityDocument>(POST_QUERY, {
+      slug: decodedSlug,
+    }),
+    client.fetch(CATEGORIES_QUERY),
+  ]);
+
   if (!post) return notFound();
 
   const mainImageUrl = post.mainImage
@@ -159,26 +180,47 @@ export default async function PostPage(props: { params: tParams }) {
           )}
         </div>
 
-        {/* Barkat Div - 30% on large screens */}
+        {/* All Categories Section - 30% on large screens */}
         <div className="bg-[#f9f6f3] shadow-xl rounded-xl p-5 lg:w-[30%] w-full lg:sticky lg:top-20">
-          <h1 className="font-[Recoleta] text-4xl font-bold">Barkat Ullah</h1>
-          <p className="text-xl mt-2">
-            Join me on YouTube as I explore the worlds of productivity,
-            business, creativity, and lifelong learning. I share insights from
-            the books I'm reading, lessons I've picked up along the way, and
-            practical tips to help you grow. Every journey starts somewhere —
-            let's grow together, one video at a time. 🌱📚
-          </p>
-          <Link
-            target="_blank"
-            href="https://www.youtube.com/@BarkatUllahzx"
-            rel="noopener noreferrer"
-          >
-            <button className="bg-white p-5 rounded-full hover:bg-blue-400 hover:text-white transition duration-300 ease-in-out text-black mt-4 flex items-center gap-2 text-lg">
-              <FaYoutube className="text-red-700" />
-              Subscribe On Youtube
-            </button>
-          </Link>
+          <h2 className="text-2xl font-[Akhand-bold] mb-4">সকল ক্যাটাগরি</h2>
+          <div className="space-y-4">
+            {categories?.map(
+              (category: {
+                _id: string;
+                title: string;
+                image: any;
+                postCount: number;
+              }) => (
+                <Link
+                  key={category._id}
+                  href={`/category/${category.title.toLowerCase()}`}
+                  className="flex items-center gap-3 p-1 bg-white rounded-2xl"
+                >
+                  {category.image && (
+                    <Image
+                      src={
+                        urlFor(category.image)?.width(100).height(100).url() ||
+                        ""
+                      }
+                      alt={category.title}
+                      width={30}
+                      height={30}
+                      className="rounded-full object-cover"
+                      unoptimized
+                    />
+                  )}
+                  <div>
+                    <h3 className="text-lg">
+                      {category.title} ({toBanglaNumeral(category.postCount)})
+                    </h3>
+                    {/* <p className="text-sm text-gray-600">
+                      {toBanglaNumeral(category.postCount)}টি পোস্ট
+                    </p> */}
+                  </div>
+                </Link>
+              )
+            )}
+          </div>
         </div>
       </div>
     </main>
