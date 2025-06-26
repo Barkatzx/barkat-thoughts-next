@@ -10,6 +10,35 @@ const toBanglaNumeral = (num: number): string => {
     .replace(/\d/g, (digit) => banglaNumerals[parseInt(digit)]);
 };
 
+// Format date in Bangla
+const formatBanglaDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  // Convert to Bangla numerals
+  const formattedDate = date.toLocaleDateString("bn-BD", options);
+  return formattedDate;
+};
+
+// Format time in Bangla
+const formatBanglaTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
+
+  // Convert to Bangla numerals and replace AM/PM
+  let timeString = date.toLocaleTimeString("bn-BD", options);
+  timeString = timeString.replace("AM", "পূর্বাহ্ণ").replace("PM", "অপরাহ্ণ");
+  return timeString;
+};
+
 // Calculate reading time in Bangla
 const calculateReadingTime = (content: any) => {
   const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
@@ -63,26 +92,41 @@ export default function PostsGrid({ posts }: PostsGridProps) {
             )}
 
             <div className="p-4">
-              {/* Category and Subcategory */}
-              {post.categories && post.categories.length > 0 && (
-                <div className="mb-3">
-                  {post.categories.map((category) => (
-                    <div key={category.title} className="flex flex-wrap gap-1">
-                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                        {category.title}
-                      </span>
-                      {category.subCategories?.map((subCat) => (
-                        <span
-                          key={subCat.slug.current}
-                          className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-                        >
-                          {subCat.title}
+              {/* Category, Subcategory and Date */}
+              <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                {post.categories && post.categories.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {post.categories.map((category) => (
+                      <div
+                        key={category.title}
+                        className="flex flex-wrap gap-1"
+                      >
+                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                          {category.title}
                         </span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
+                        {category.subCategories?.map((subCat) => (
+                          <span
+                            key={subCat.slug.current}
+                            className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                          >
+                            {subCat.title}
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {post.publishedAt && (
+                  <div className="text-xs text-gray-500 whitespace-nowrap">
+                    <span className="text-sm text-black font-bold">
+                      {formatBanglaDate(post.publishedAt)}
+                    </span>
+                    {/* <span className="mx-1">•</span>
+                    <span>{formatBanglaTime(post.publishedAt)}</span> */}
+                  </div>
+                )}
+              </div>
 
               {/* Title */}
               <h2 className="font-[Akhand-bold] text-2xl mb-2 hover:text-blue-600 transition-colors duration-200">
@@ -104,7 +148,7 @@ export default function PostsGrid({ posts }: PostsGridProps) {
                 <div className="flex items-center">
                   {/* Author Image */}
                   {post.author?.image ? (
-                    <div className="relative h-8 w-8 rounded-full overflow-hidden mr-2 ">
+                    <div className="relative h-8 w-8 rounded-full overflow-hidden mr-2">
                       <Image
                         src={post.author.image.asset.url}
                         alt={post.author.name}
