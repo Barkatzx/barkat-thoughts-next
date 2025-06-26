@@ -1,7 +1,10 @@
+// app/category/[slug]/page.tsx
+
 import { client } from "@/sanity/Client";
 import imageUrlBuilder from "@sanity/image-url";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "category" && title == $slug]._id)] {
   title,
@@ -27,12 +30,11 @@ const ALL_CATEGORIES_QUERY = `*[_type == "category"] {
   "postCount": count(*[_type == "post" && references(^._id)])
 }`;
 
-// Add this new query to fetch current category details
 const CURRENT_CATEGORY_QUERY = `*[_type == "category" && title == $slug][0] {
   description
 }`;
 
-// Function to convert English numerals to Bangla
+// Convert English numerals to Bangla
 const toBanglaNumeral = (num: number): string => {
   const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
   return num
@@ -42,7 +44,7 @@ const toBanglaNumeral = (num: number): string => {
 
 const builder = imageUrlBuilder(client);
 
-// Function to calculate reading time in Bangla
+// Calculate reading time in Bangla
 const calculateReadingTime = (content: any) => {
   const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
   const wordCount =
@@ -64,16 +66,44 @@ const calculateReadingTime = (content: any) => {
     .join("");
 };
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const decodedSlug = decodeURIComponent(params.slug);
+// Type definition for the page props
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+
+  const currentCategory = await client.fetch(CURRENT_CATEGORY_QUERY, {
+    slug: decodedSlug,
+  });
+
+  return {
+    title: `${decodedSlug} এর সকল পোস্ট`,
+    description:
+      currentCategory?.description ||
+      `${decodedSlug} ক্যাটাগরির সকল পোস্ট দেখুন`,
+  };
+}
+
+// Next.js 15: Page component with proper async params handling
+export default async function CategoryPage({ params }: PageProps) {
+  // Await the params promise first
+  const resolvedParams = await params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+
+  if (!decodedSlug) {
+    return notFound();
+  }
+
   const [posts, categories, currentCategory] = await Promise.all([
     client.fetch(CATEGORY_POSTS_QUERY, { slug: decodedSlug }),
     client.fetch(ALL_CATEGORIES_QUERY),
-    client.fetch(CURRENT_CATEGORY_QUERY, { slug: decodedSlug }), // Fetch current category
+    client.fetch(CURRENT_CATEGORY_QUERY, { slug: decodedSlug }),
   ]);
 
   return (
@@ -85,21 +115,18 @@ export default async function CategoryPage({
           aria-hidden="true"
         />
         <h1 className="font-[Akhand-bold] text-5xl mb-2 z-5">
-          {" "}
-          {/* Reduced margin-bottom */}
           {decodedSlug} এর সকল পোস্টগুলো
         </h1>
-        {/* Added category description */}
         {currentCategory?.description && (
-          <p className="text-xl  text-gray-700 z-5">
+          <p className="text-xl text-gray-700 z-5">
             {currentCategory.description}
           </p>
         )}
       </div>
 
-      {/* Rest of your existing code remains exactly the same */}
+      {/* Posts and Sidebar */}
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl px-5 md:px-20 py-10">
-        {/* Posts List - 2 columns on desktop, 1 on mobile */}
+        {/* Posts List */}
         <div className="md:col-span-2">
           <div className="grid md:grid-cols-2 gap-6">
             {posts.length === 0 ? (
@@ -153,14 +180,13 @@ export default async function CategoryPage({
                       </Link>
                     </h2>
 
-                    {/* Excerpt - Now properly displayed */}
+                    {/* Excerpt */}
                     {post.excerpt && (
                       <p className="text-gray-800 mb-4 line-clamp-3 text-lg">
                         {post.excerpt}
                       </p>
                     )}
 
-                    {/* Horizontal line above author info */}
                     <hr className="my-4 border-gray-100" />
 
                     {/* Author and Reading Time */}
