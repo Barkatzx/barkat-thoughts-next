@@ -5,10 +5,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "category" && title == $slug]._id)] {
+  _id,
   title,
   slug,
   publishedAt,
-  mainImage,
+  mainImage {
+    asset->{
+      url
+    }
+  },
   excerpt,
   body,
   categories[]->{
@@ -22,7 +27,11 @@ const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "catego
   },
   author->{
     name,
-    image
+    image {
+      asset->{
+        url
+      }
+    }
   }
 } | order(publishedAt desc)`;
 
@@ -66,18 +75,6 @@ const formatBanglaDate = (dateString: string): string => {
   return date.toLocaleDateString("bn-BD", options);
 };
 
-// Format time in Bangla
-const formatBanglaTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  };
-  let timeString = date.toLocaleTimeString("bn-BD", options);
-  return timeString.replace("AM", "পূর্বাহ্ণ").replace("PM", "অপরাহ্ণ");
-};
-
 const builder = imageUrlBuilder(client);
 
 // Calculate reading time in Bangla
@@ -95,11 +92,7 @@ const calculateReadingTime = (content: any) => {
     }, 0) || 0;
 
   const minutes = Math.ceil(wordCount / 200);
-  return minutes
-    .toString()
-    .split("")
-    .map((digit) => banglaNumerals[parseInt(digit)])
-    .join("");
+  return toBanglaNumeral(minutes);
 };
 
 interface PageProps {
@@ -183,101 +176,103 @@ export default async function CategoryPage({ params }: PageProps) {
             ) : (
               posts.map((post: any) => (
                 <article
-                  key={post.slug.current}
-                  className="border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                  key={post._id}
+                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
                 >
                   {/* Post Image */}
                   {post.mainImage && (
                     <Link
-                      href={`/post/${post.slug.current}`}
-                      className="block aspect-video overflow-hidden"
+                      href={`/blogs/${post.slug.current}`}
+                      className="block relative h-48 w-full"
                     >
                       <Image
-                        src={builder
-                          .image(post.mainImage)
-                          .width(800)
-                          .height(450)
-                          .url()}
+                        src={post.mainImage.asset.url}
                         alt={post.title}
-                        width={400}
-                        height={225}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </Link>
                   )}
 
                   <div className="p-4">
                     {/* Categories, Subcategories and Date */}
-                    <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      {post.categories && post.categories.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {post.categories.map((cat: any) => (
-                            <div
-                              key={cat.title}
-                              className="flex flex-wrap gap-1"
-                            >
-                              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                {cat.title}
-                              </span>
-                              {cat.subCategories?.map((subCat: any) => (
-                                <span
-                                  key={subCat.slug.current}
-                                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-                                >
-                                  {subCat.title}
+                    <div className="flex justify-between items-start mb-3 gap-2">
+                      {/* Left side - Categories and Subcategories */}
+                      <div className="flex-1 min-w-0">
+                        {post.categories && post.categories.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {post.categories.map((cat: any) => (
+                              <div
+                                key={cat.title}
+                                className="flex flex-wrap gap-1"
+                              >
+                                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded font-[Akhand-bold]">
+                                  {cat.title}
                                 </span>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                                {cat.subCategories?.map((subCat: any) => (
+                                  <span
+                                    key={subCat.slug.current}
+                                    className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded font-[Akhand-bold]"
+                                  >
+                                    {subCat.title}
+                                  </span>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
+                      {/* Right side - Date */}
                       {post.publishedAt && (
-                        <div className="text-xs whitespace-nowrap font-[Akhand-bold]">
-                          <span>{formatBanglaDate(post.publishedAt)}</span>
-                          {/* <span className="mx-1">•</span>
-                          <span>{formatBanglaTime(post.publishedAt)}</span> */}
+                        <div className="text-xs whitespace-nowrap font-[Akhand-bold] ml-2">
+                          {formatBanglaDate(post.publishedAt)}
                         </div>
                       )}
                     </div>
 
-                    {/* Post Title */}
-                    <h2 className="font-[Akhand-bold] text-2xl mb-2 hover:text-blue-600 transition-colors">
-                      <Link href={`/post/${post.slug.current}`}>
+                    {/* Title */}
+                    <h2 className="font-[Akhand-bold] text-xl md:text-2xl mb-2 hover:text-blue-600 transition-colors duration-200">
+                      <Link href={`/blogs/${post.slug.current}`}>
                         {post.title}
                       </Link>
                     </h2>
 
                     {/* Excerpt */}
                     {post.excerpt && (
-                      <p className="text-gray-800 mb-4 line-clamp-3 text-lg">
+                      <p className="text-gray-600 mb-3 line-clamp-2 text-base md:text-lg">
                         {post.excerpt}
                       </p>
                     )}
 
-                    <hr className="my-4 border-gray-100" />
+                    {/* Horizontal Line */}
+                    <hr className="my-3 border-gray-200" />
 
-                    {/* Author and Reading Time */}
+                    {/* Footer - Author and Reading Time */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {post.author?.image && (
-                          <Image
-                            src={builder
-                              .image(post.author.image)
-                              .width(40)
-                              .height(40)
-                              .url()}
-                            alt={post.author.name}
-                            width={24}
-                            height={24}
-                            className="rounded-full"
-                          />
+                      <div className="flex items-center">
+                        {/* Author Image */}
+                        {post.author?.image ? (
+                          <div className="relative h-8 w-8 rounded-full overflow-hidden mr-2">
+                            <Image
+                              src={post.author.image.asset.url}
+                              alt={post.author.name}
+                              fill
+                              className="object-cover"
+                              sizes="32px"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-gray-200 mr-2 flex items-center justify-center text-xs">
+                            {post.author?.name?.charAt(0) || "?"}
+                          </div>
                         )}
-                        <span className="text-lg text-gray-600">
-                          {post.author?.name}
+                        <span className="text-sm text-gray-600">
+                          {post.author?.name || "বরকত উল্লাহ"}
                         </span>
                       </div>
-                      <div className="text-lg text-gray-600">
+                      <div className="text-sm text-gray-500">
                         পড়ার সময়: {calculateReadingTime(post.body)} মিনিট
                       </div>
                     </div>
@@ -299,11 +294,13 @@ export default async function CategoryPage({ params }: PageProps) {
           <div className="space-y-1">
             {categories.map((category: any) => (
               <div key={category.title} className="group">
-                <div className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-xl font-[Akhand-bold] transition-colors">
+                <div className="flex items-center gap-3 p-1 hover:bg-gray-100 rounded-xl  transition-colors">
                   <Link
                     href={`/category/${category.title}`}
                     className={`flex items-center gap-3 w-full ${
-                      decodedSlug === category.title ? "bg-gray-100" : ""
+                      decodedSlug === category.title
+                        ? "bg-gray-100 p-1 rounded-xl shadow-sm"
+                        : ""
                     }`}
                   >
                     {category.image && (
