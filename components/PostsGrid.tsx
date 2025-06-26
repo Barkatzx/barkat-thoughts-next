@@ -194,7 +194,14 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
                       </p>
                       <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
                         <span className="text-xs text-gray-500">
-                          {new Date(post.publishedAt).toLocaleDateString()}
+                          {new Date(post.publishedAt).toLocaleDateString(
+                            "bn-BD",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )}
                         </span>
                         <span className="text-xs text-gray-500">
                           5 min read

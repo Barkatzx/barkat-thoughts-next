@@ -33,10 +33,7 @@ export default function BlogHero() {
   return (
     <section className="relative bg-[#f8f5f2] py-12 md:py-20 overflow-hidden">
       {/* Background pattern */}
-      <div
-        className="absolute inset-0 bg-[url('../public/wave.png')] bg-cover opacity-10"
-        aria-hidden="true"
-      />
+      <div className="absolute inset-10 bg-[url('/wave.png')] bg-cover bg-no-repeat bg-center opacity-10" />
 
       <div className="container mx-auto px-5 md:px-20 relative z-10">
         <div className="text-center">
