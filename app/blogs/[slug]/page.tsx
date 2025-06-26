@@ -6,8 +6,27 @@ import { PortableText, type SanityDocument } from "next-sanity";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FaBookReader } from "react-icons/fa";
 import { IoIosTime } from "react-icons/io";
 import { MdDateRange } from "react-icons/md";
+
+// Calculate reading time in Bangla
+const calculateReadingTime = (content: any) => {
+  const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  const wordCount =
+    content?.reduce((acc: number, block: any) => {
+      if (block._type !== "block" || !block.children) return acc;
+      return (
+        acc +
+        block.children
+          .map((child: any) => child.text?.split(" ").length || 0)
+          .reduce((a: number, b: number) => a + b, 0)
+      );
+    }, 0) || 0;
+
+  const minutes = Math.ceil(wordCount / 200);
+  return toBanglaNumeral(minutes);
+};
 
 // Updated GROQ query to include author details and separate query for all categories
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -108,7 +127,7 @@ export default async function PostPage(props: { params: tParams }) {
           {post.categories?.map((cat: { title: string }, idx: number) => (
             <span
               key={idx}
-              className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+              className="font-[Akhand-bold] bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
             >
               {cat.title}
             </span>
@@ -121,7 +140,7 @@ export default async function PostPage(props: { params: tParams }) {
         </h1>
 
         {/* Date only in header */}
-        <div className="flex items-center gap-6 text-2xl font-[Akhand-bold] mb-5 z-10">
+        <div className="font-[Akhand-bold] flex items-center gap-6 text-sm mb-5 z-10">
           <div className="flex items-center gap-2">
             <MdDateRange className="text-blue-600" />
             <span>{formattedDate}</span>
@@ -129,6 +148,10 @@ export default async function PostPage(props: { params: tParams }) {
           <div className="flex items-center gap-2">
             <IoIosTime className="text-blue-600" />
             <span>{formattedTime}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FaBookReader className="text-blue-600" />{" "}
+            <span>পড়তে {calculateReadingTime(post.body)} মিনিট লাগবে</span>
           </div>
         </div>
 
