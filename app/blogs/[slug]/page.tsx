@@ -146,9 +146,9 @@ export default async function PostPage(props: { params: tParams }) {
       </div>
 
       {/* Post Body */}
-      <div className="px-5 md:px-20 py-10 flex gap-10 items-start lg:flex-row flex-col">
+      <div className="px-5 md:px-10 py-10 flex gap-10 items-start lg:flex-row flex-col">
         {/* Post Body - 70% on large screens */}
-        <div className="mt-6 text-xl lg:w-[70%] w-full ">
+        <div className="mt-6 text-xl">
           {Array.isArray(post.body) && (
             <PortableText value={post.body} components={components} />
           )}
@@ -181,10 +181,11 @@ export default async function PostPage(props: { params: tParams }) {
         </div>
 
         {/* All Categories Section - 30% on large screens */}
-        <div className="bg-white shadow-sm rounded-2xl p-5 lg:w-[30%] w-full lg:sticky lg:top-20 border border-gray-100">
-          <h2 className="font-[Akhand-bold] text-2xl mb-4 px-2">
+        <div className="bg-white shadow-sm rounded-2xl p-5 h-fit sticky top-20 border border-gray-100">
+          <h2 className="font-[Akhand-bold] text-2xl mb-2 px-2">
             সকল ক্যাটাগরি
           </h2>
+          <hr className="mb-4 border-gray-200" />
           <div className="space-y-1">
             {categories?.map((category: any, idx: any) => {
               // Generate a unique key (prefer _id, fallback to idx)
@@ -212,24 +213,24 @@ export default async function PostPage(props: { params: tParams }) {
                   className="flex items-center gap-3 p-1 hover:bg-gray-200 active:bg-gray-400 rounded-xl transition-colors duration-100"
                 >
                   {category.image && (
-                    <div className="w-5 h-5 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
                       <Image
                         src={imageUrl}
                         alt={category.title}
-                        width={20}
-                        height={20}
+                        width={40}
+                        height={40}
                         className="object-cover rounded-full"
                         unoptimized
                       />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-[Akhand-bold] text-sm text-gray-800 truncate">
+                    <h3 className="font-[Akhand-bold] text-lg text-gray-800 truncate">
                       {category.title}
                     </h3>
                   </div>
                   <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
-                    <span className="text-sm font-[Akhand-bold] text-gray-600">
+                    <span className="text-lg font-[Akhand-bold] text-gray-600">
                       {toBanglaNumeral(category.postCount || 0)}
                     </span>
                   </div>

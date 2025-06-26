@@ -8,7 +8,7 @@ const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "catego
   slug,
   publishedAt,
   mainImage,
-  excerpt,
+  excerpt,  // Make sure this is included in the query
   body,
   categories[]->{
     title,
@@ -25,6 +25,14 @@ const ALL_CATEGORIES_QUERY = `*[_type == "category"] {
   "image": image.asset->,
   "postCount": count(*[_type == "post" && references(^._id)])
 }`;
+
+// Function to convert English numerals to Bangla
+const toBanglaNumeral = (num: number): string => {
+  const banglaNumerals = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return num
+    .toString()
+    .replace(/\d/g, (digit) => banglaNumerals[parseInt(digit)]);
+};
 
 const builder = imageUrlBuilder(client);
 
@@ -63,7 +71,7 @@ export default async function CategoryPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="font-[Akhand-bold] text-3xl font-bold mb-8">
+      <h1 className="font-[Akhand-bold] text-5xl mb-8">
         {decodedSlug} এর সকল পোস্ট
       </h1>
 
@@ -110,30 +118,24 @@ export default async function CategoryPage({
                           href={`/category/${cat.title}`}
                           className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full text-sm text-blue-800 transition-colors"
                         >
-                          {cat.image && (
-                            <Image
-                              src={builder
-                                .image(cat.image)
-                                .width(30)
-                                .height(30)
-                                .url()}
-                              alt={cat.title}
-                              width={16}
-                              height={16}
-                              className="rounded-full w-4 h-4 object-cover"
-                            />
-                          )}
                           {cat.title}
                         </Link>
                       ))}
                     </div>
 
                     {/* Post Title */}
-                    <h2 className="text-xl font-bold mb-2 hover:text-blue-600 transition-colors">
+                    <h2 className="font-[Akhand-bold] text-2xl mb-2 hover:text-blue-600 transition-colors">
                       <Link href={`/post/${post.slug.current}`}>
                         {post.title}
                       </Link>
                     </h2>
+
+                    {/* Excerpt - Now properly displayed */}
+                    {post.excerpt && (
+                      <p className="text-gray-800 mb-4 line-clamp-3 text-lg">
+                        {post.excerpt}
+                      </p>
+                    )}
 
                     {/* Horizontal line above author info */}
                     <hr className="my-4 border-gray-100" />
@@ -154,11 +156,11 @@ export default async function CategoryPage({
                             className="rounded-full"
                           />
                         )}
-                        <span className="text-sm font-medium">
+                        <span className="text-lg text-gray-600">
                           {post.author?.name}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-lg text-gray-600">
                         পড়ার সময়: {calculateReadingTime(post.body)} মিনিট
                       </div>
                     </div>
@@ -171,14 +173,19 @@ export default async function CategoryPage({
 
         {/* Categories Sidebar */}
         <div className="bg-white shadow-sm rounded-2xl p-5 h-fit sticky top-20 border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 px-2">সকল ক্যাটাগরি</h2>
+          <h2 className="font-[Akhand-bold] text-2xl font-semibold mb-2 px-2">
+            সকল ক্যাটাগরি
+          </h2>
+          <hr className="mb-4 border-gray-200" />
+
+          {/* Categories List */}
           <div className="space-y-2">
             {categories.map((category: any) => (
               <Link
                 key={category.title}
                 href={`/category/${category.title}`}
-                className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors ${
-                  decodedSlug === category.title ? "bg-gray-50" : ""
+                className={`flex items-center gap-3 p-1 hover:bg-gray-200 rounded-xl font-[Akhand-bold] transition-colors ${
+                  decodedSlug === category.title ? "bg-gray-200" : ""
                 }`}
               >
                 {category.image && (
@@ -191,7 +198,7 @@ export default async function CategoryPage({
                     alt={category.title}
                     width={40}
                     height={40}
-                    className="rounded-lg w-10 h-10 object-cover"
+                    className="rounded-full w-7 h-7 object-cover"
                   />
                 )}
                 <div className="flex-1 min-w-0">
@@ -200,8 +207,8 @@ export default async function CategoryPage({
                   </h3>
                 </div>
                 <div className="bg-gray-100 rounded-full px-2.5 py-0.5">
-                  <span className="text-sm font-medium text-gray-600">
-                    {category.postCount}
+                  <span className="text-lg font-[Akhand-bold] text-gray-600">
+                    {toBanglaNumeral(category.postCount || 0)}
                   </span>
                 </div>
               </Link>
