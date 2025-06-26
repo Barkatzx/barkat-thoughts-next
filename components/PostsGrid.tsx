@@ -91,15 +91,27 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
                   <div className="p-8 md:w-1/2 flex flex-col justify-center">
                     <div className="flex flex-wrap gap-2 mb-4">
                       {posts[0].categories?.map((cat, i) => (
-                        <span
-                          key={i}
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            categoryColors[cat.title.toLowerCase()] ||
-                            categoryColors.blue
-                          }`}
-                        >
-                          {cat.title}
-                        </span>
+                        <div key={i} className="flex flex-wrap gap-1">
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              categoryColors[cat.title.toLowerCase()] ||
+                              categoryColors.blue
+                            }`}
+                          >
+                            {cat.title}
+                          </span>
+                          {cat.subCategories?.map((subCat, j) => (
+                            <span
+                              key={j}
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                categoryColors[cat.title.toLowerCase()] ||
+                                categoryColors.blue
+                              } bg-opacity-50`}
+                            >
+                              {subCat.title}
+                            </span>
+                          ))}
+                        </div>
                       ))}
                     </div>
                     <h3 className="font-[Akhand-bold] text-2xl md:text-3xl font-bold mb-4">
@@ -173,17 +185,29 @@ export default function PostsGrid({ posts }: { posts: Post[] }) {
                       </div>
                     )}
                     <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex flex-wrap gap-2 mb-3">
+                      <div className="flex flex-wrap gap-1 mb-3">
                         {post.categories?.map((cat, i) => (
-                          <span
-                            key={i}
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              categoryColors[cat.title.toLowerCase()] ||
-                              categoryColors.default
-                            }`}
-                          >
-                            {cat.title}
-                          </span>
+                          <div key={i} className="flex flex-wrap gap-1">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                categoryColors[cat.title.toLowerCase()] ||
+                                categoryColors.default
+                              }`}
+                            >
+                              {cat.title}
+                            </span>
+                            {cat.subCategories?.map((subCat, j) => (
+                              <span
+                                key={j}
+                                className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                                  categoryColors[cat.title.toLowerCase()] ||
+                                  categoryColors.default
+                                } bg-opacity-50`}
+                              >
+                                {subCat.title}
+                              </span>
+                            ))}
+                          </div>
                         ))}
                       </div>
                       <h3 className="text-xl font-bold mb-3 line-clamp-2">

@@ -13,10 +13,16 @@ export interface Post {
       url: string;
     };
   };
-  excerpt?: string; // Make it optional
-  body?: any[]; // PortableText content (array of blocks)
+  excerpt?: string;
+  body?: any[];
   categories?: {
     title: string;
+    subCategories?: {
+      title: string;
+      slug: {
+        current: string;
+      };
+    }[];
   }[];
 }
 
@@ -35,7 +41,13 @@ const POSTS_QUERY = `*[
   excerpt,
   body,
   categories[]->{
-    title
+    title,
+    subCategories[] {
+      title,
+      slug {
+        current
+      }
+    }
   }
 }`;
 

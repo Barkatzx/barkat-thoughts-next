@@ -8,7 +8,7 @@ const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "catego
   slug,
   publishedAt,
   mainImage,
-  excerpt,  // Make sure this is included in the query
+  excerpt,
   body,
   categories[]->{
     title,
@@ -22,8 +22,14 @@ const CATEGORY_POSTS_QUERY = `*[_type == "post" && references(*[_type == "catego
 
 const ALL_CATEGORIES_QUERY = `*[_type == "category"] {
   title,
+  description,
   "image": image.asset->,
   "postCount": count(*[_type == "post" && references(^._id)])
+}`;
+
+// Add this new query to fetch current category details
+const CURRENT_CATEGORY_QUERY = `*[_type == "category" && title == $slug][0] {
+  description
 }`;
 
 // Function to convert English numerals to Bangla
@@ -64,18 +70,35 @@ export default async function CategoryPage({
   params: { slug: string };
 }) {
   const decodedSlug = decodeURIComponent(params.slug);
-  const [posts, categories] = await Promise.all([
+  const [posts, categories, currentCategory] = await Promise.all([
     client.fetch(CATEGORY_POSTS_QUERY, { slug: decodedSlug }),
     client.fetch(ALL_CATEGORIES_QUERY),
+    client.fetch(CURRENT_CATEGORY_QUERY, { slug: decodedSlug }), // Fetch current category
   ]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="font-[Akhand-bold] text-5xl mb-8">
-        {decodedSlug} এর সকল পোস্ট
-      </h1>
+    <div className="">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-[#f9f6f3] flex flex-col gap-4 px-5 md:px-20 py-10">
+        <div
+          className="absolute inset-0 bg-[url('/wave.png')] bg-cover opacity-60 z-0"
+          aria-hidden="true"
+        />
+        <h1 className="font-[Akhand-bold] text-5xl mb-2 z-5">
+          {" "}
+          {/* Reduced margin-bottom */}
+          {decodedSlug} এর সকল পোস্টগুলো
+        </h1>
+        {/* Added category description */}
+        {currentCategory?.description && (
+          <p className="text-xl  text-gray-700 z-5">
+            {currentCategory.description}
+          </p>
+        )}
+      </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      {/* Rest of your existing code remains exactly the same */}
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl px-5 md:px-20 py-10">
         {/* Posts List - 2 columns on desktop, 1 on mobile */}
         <div className="md:col-span-2">
           <div className="grid md:grid-cols-2 gap-6">
