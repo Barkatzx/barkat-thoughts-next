@@ -118,8 +118,8 @@ export default function Header() {
             exit="exit"
             className="md:hidden absolute top-25 left-3 right-3 bg-[#f9f6f3] shadow-lg z-50 text-lg"
           >
-            <nav className="flex flex-col items-center py-4">
-              {["About", "Statistics", "Services"].map((item, i) => (
+            <nav className="font-[Akhand-bold] flex flex-col items-center py-4">
+              {["হোমপেইজ", "ক্যাটাগরী", "সার্ভিস"].map((item, i) => (
                 <motion.div
                   key={item}
                   variants={navItemVariants}
@@ -140,8 +140,8 @@ export default function Header() {
             </nav>
             <div className=" justify-center flex items-center mb-4">
               <Link href={`/contact`}>
-                <button className="bg-sky-400 px-8 py-1 rounded-full text-lg font-semibold text-black hover:bg-amber-500 transition-colors">
-                  Contact Me
+                <button className="bg-sky-400 px-8 py-1 rounded-full text-lg font-semibold text-black hover:bg-amber-500 transition-colors cursor- font-[Akhand-bold]">
+                  কনসাল্টেশন
                 </button>
               </Link>
             </div>
@@ -152,8 +152,8 @@ export default function Header() {
       {/* Right spacer for desktop */}
       <div className="hidden md:block flex-1">
         <Link href={`/contact`}>
-          <button className="bg-sky-400 px-8 py-1 rounded-full text-lg font-semibold text-black hover:bg-amber-500 transition-colors cursor-pointer">
-            Contact Me
+          <button className="bg-sky-400 px-8 py-1 rounded-full text-lg font-semibold text-black hover:bg-amber-500 transition-colors cursor- font-[Akhand-bold]">
+            কনসাল্টেশন
           </button>
         </Link>
       </div>
